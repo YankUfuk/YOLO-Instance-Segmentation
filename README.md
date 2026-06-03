@@ -1,91 +1,79 @@
-# Trash/Waste Image Segmentation with YOLOv8
+# Small Trash Image Segmentation with YOLOv8
 
-## 1. Project Title
+I wanted to understand how a pretrained deep learning model can be adapted to a
+specific computer vision problem. Instead of training a model from scratch, I
+used fine-tuning. The problem I chose was small trash segmentation: teaching a
+model to find small trash objects in images and outline their shapes.
 
-Trash/Waste Image Segmentation with Fine-Tuned Ultralytics YOLOv8
+This repository is the practical result of that learning process. It is written
+to be simple enough for a beginner to follow, while still being useful as a
+GitHub project for a course assignment or presentation.
 
-## 2. Problem Definition
+## Why This Project?
 
-This project studies how to fine-tune a pretrained neural network for image
-segmentation. The target task is trash or waste segmentation, where the model
-must identify waste objects in an image and predict their object boundaries.
+When people first hear about computer vision, they often think only about
+"recognizing" what is inside an image. But there are actually different levels
+of understanding:
 
-This is more detailed than simple classification because the output is not only
-the object category, but also the object location and shape.
+- **Classification** answers: "What is in this image?"
+- **Object detection** answers: "What objects are in this image, and where are they?"
+- **Instance segmentation** answers: "What objects are in this image, where are they, and what exact shape does each object have?"
 
-## 3. Motivation
+This project focuses on **instance segmentation** of small trash objects.
 
-Trash and waste detection is a meaningful computer vision problem because it can
-support applications such as:
+That matters because trash is often small, irregular, and visually messy. A
+bounding box alone may not describe it very well. Segmentation is more useful
+because it helps the model learn not only the object location, but also the
+object boundary.
 
-- smart waste collection
-- environmental monitoring
-- recycling support systems
-- automatic scene understanding in public spaces
+## The Model: YOLOv8n-seg
 
-From an academic perspective, this project is a practical way to study transfer
-learning, segmentation, dataset preparation, model evaluation, and experimental
-workflow design.
+This project uses **Ultralytics YOLO** with the pretrained model
+`yolov8n-seg.pt`.
 
-## 4. Selected Architecture
+It is important to understand that **YOLO is not just a program**. It is a
+computer vision model architecture designed for tasks like detection and
+segmentation.
 
-The selected architecture is Ultralytics YOLO segmentation, with
-`yolov8n-seg.pt` as the default starting model.
+The chosen architecture here is **YOLOv8n-seg**:
 
-This model was selected because it:
+- `YOLOv8` is the model family
+- `n` means **nano**, the lightweight version
+- `seg` means it is the **segmentation** version
 
-- is pretrained and ready for transfer learning
-- supports segmentation in addition to detection
-- is lightweight compared to larger models
-- is practical for student experiments on limited hardware
-- has a clean Python interface for training, validation, and prediction
+YOLOv8n-seg predicts:
 
-## 5. What is Fine-Tuning?
+- the class label
+- the bounding box
+- the confidence score
+- the segmentation mask
 
-Fine-tuning is the process of taking a model that has already been pretrained on
-a large dataset and continuing training it on a new task-specific dataset.
+I selected the nano version because it is smaller, faster, and more practical
+for a student project running locally on a CPU.
 
-In this project, fine-tuning means:
+## What Fine-Tuning Means
 
-- starting from pretrained YOLO segmentation weights
-- replacing general knowledge with task-specific knowledge about trash images
-- adapting the model to the custom dataset without training from scratch
+A pretrained model has already learned useful visual patterns from large
+datasets. It has seen many examples of shapes, textures, edges, and object
+structures.
 
-This approach is useful because it usually needs less data, less training time,
-and fewer computational resources than full training from the beginning.
+Fine-tuning means we do not throw away that earlier knowledge. Instead, we
+continue training the model on a smaller, task-specific dataset so it can adapt
+to a new problem.
 
-## 6. YOLO Segmentation Architecture Overview
+In this project, the pretrained YOLOv8n-seg model was adapted to a **single
+class**:
 
-YOLO segmentation extends an object detection pipeline by adding segmentation
-outputs for each detected object.
+- `small trash`
 
-### Backbone
+That makes fine-tuning a very practical approach. It is faster and usually more
+realistic than trying to train a segmentation model from the beginning.
 
-The backbone is the feature extraction part of the network. It reads the input
-image and learns visual patterns such as edges, textures, shapes, and object
-parts.
+## The Dataset
 
-### Neck
+The dataset used for this project comes from **Roboflow**.
 
-The neck combines features from different image scales. This helps the model
-detect both small and large objects more effectively by passing multi-scale
-information to later stages.
-
-### Head
-
-The head produces the final prediction outputs. In a YOLO-style model, the head
-predicts object-related information such as class confidence and bounding box
-information.
-
-### Segmentation Output
-
-For segmentation, the model also predicts object masks. These masks represent
-the shape of each detected object at the pixel or polygon level, which makes the
-output more informative than a bounding box alone.
-
-## 7. Dataset Format
-
-This project expects a YOLO segmentation dataset with the following structure:
+It is a YOLO segmentation dataset with the following local structure:
 
 ```text
 dataset/
@@ -95,129 +83,224 @@ dataset/
 ├── valid/
 │   ├── images/
 │   └── labels/
-├── test/
-│   ├── images/
-│   └── labels/
 └── data.yaml
 ```
 
-Important notes:
+Local paths used in the project:
 
-- each image should have a matching label file with the same filename stem
-- the `data.yaml` file defines the split paths and class names
-- segmentation labels store polygon point coordinates for each object
-- the dataset is not included in this repository
+- `dataset/train/images`
+- `dataset/train/labels`
+- `dataset/valid/images`
+- `dataset/valid/labels`
+- `dataset/data.yaml`
 
-An example configuration file is provided in `config/data.yaml.example`.
+Dataset size:
 
-## 8. Training Pipeline
+- train: `73` images and `73` labels
+- valid: `23` images and `23` labels
+- no separate test split
 
-The planned pipeline for the project is:
+Because the dataset did not include a separate test folder, the **validation
+set was also used for checking predictions and evaluation** during this initial
+experiment.
 
-1. Prepare or export the dataset in YOLO segmentation format.
-2. Check the dataset structure with `scripts/check_dataset.py`.
-3. Test the Python environment with `test_installation.py`.
-4. Fine-tune the pretrained `yolov8n-seg.pt` model with `train.py`.
-5. Run inference with `predict.py`.
-6. Evaluate the model with `evaluate.py`.
-7. Summarize observations, limitations, and future improvements.
+The `dataset/` folder is ignored by Git, so anyone using this repository needs
+to **download the dataset locally** and place it inside `dataset/`.
 
-## 9. Evaluation Metrics
+## How YOLO Uses the Dataset
 
-The final evaluation metrics will be added after training and testing are
-completed.
+One of the most important things I learned is that training is not just "giving
+images to a model."
 
-Planned metrics to report:
+Each image has a matching label file:
 
-- validation loss: `[to be added]`
-- segmentation mAP: `[to be added]`
-- precision: `[to be added]`
-- recall: `[to be added]`
-- qualitative prediction examples: `[to be added]`
+- the **image** is the input
+- the **label file** is the ground truth
 
-No real performance claims are included yet because the experiments are still in
-progress.
+During training, YOLO:
 
-## 10. Challenges Encountered
+1. reads the image
+2. predicts the class, bounding box, and segmentation mask
+3. compares that prediction with the label file
+4. calculates the error, called **loss**
+5. updates the model weights
 
-Some expected or common challenges in this type of project are:
+This update step is what makes learning happen.
 
-- preparing a clean segmentation dataset
-- making sure every image has a correct label file
-- handling class imbalance or limited training data
-- tuning epochs, batch size, and image size for available hardware
-- avoiding overfitting on a small custom dataset
-- interpreting segmentation errors in difficult scenes
+For segmentation, the label files are especially important because they contain
+**polygon or mask information**, not only boxes. That means the model is not
+just learning where the object is, but also the object boundary.
 
-This section can be updated later with project-specific challenges from the
-actual experiments.
+## Initial Fine-Tuning Experiment
 
-## 11. What I Learned
+The goal of the first run was not to reach perfect accuracy. The goal was to
+verify that the full fine-tuning pipeline works correctly from start to finish.
 
-This project is designed to help build understanding in the following areas:
+Training details:
 
-- how transfer learning works in practice
-- how YOLO segmentation differs from standard classification
-- how dataset structure affects training success
-- how to organize a machine learning experiment clearly
-- how to evaluate a segmentation system responsibly
+- architecture: `YOLOv8n-seg`
+- pretrained weights: `yolov8n-seg.pt`
+- library: `Ultralytics YOLO`
+- hardware: local CPU
+- experiment type: initial pipeline verification
 
-This section should be updated at the end of the project with final reflections.
+Training command used:
 
-## 12. How to Run the Project
+```bash
+python train.py --epochs 3 --batch 2
+```
 
-### Install Dependencies
+This short run successfully completed and produced a trained weights file:
+
+```text
+best.pt
+```
+
+In other words, the fine-tuning workflow worked correctly: the model loaded,
+the dataset was used, training finished, and the best checkpoint was saved.
+
+## Observed Validation Metrics
+
+These are the observed validation metrics from the 3-epoch run:
+
+| Metric | Value |
+| --- | ---: |
+| Box Precision | 0.55 |
+| Box Recall | 0.517 |
+| Box mAP50 | 0.457 |
+| Box mAP50-95 | 0.262 |
+| Mask Precision | 0.525 |
+| Mask Recall | 0.494 |
+| Mask mAP50 | 0.446 |
+| Mask mAP50-95 | 0.233 |
+
+These numbers should be interpreted carefully.
+
+Because the model was trained only for **3 epochs** on a **small dataset**, the
+goal was not to achieve high final accuracy. The purpose was to demonstrate that
+the fine-tuning process works and produces meaningful outputs.
+
+## Repository Files
+
+Here is what the main files do:
+
+- `train.py`: loads `YOLOv8n-seg` and fine-tunes it on the dataset
+- `scripts/check_dataset.py`: checks dataset structure, image counts, and label counts
+- `predict.py`: runs the trained model on images and saves visual predictions
+- `evaluate.py`: evaluates the model on a dataset split
+- `requirements.txt`: lists the Python dependencies
+- `README.md`: explains the project, workflow, and lessons learned
+
+## How to Run the Project
+
+### 1. Create a Virtual Environment
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
+```
+
+### 2. Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### Test the Installation
+### 3. Download the Dataset
 
-```bash
-python test_installation.py
-```
+Download the YOLO segmentation dataset from Roboflow and place it under the
+local `dataset/` folder.
 
-### Check the Dataset
+### 4. Check the Dataset
 
 ```bash
 python scripts/check_dataset.py
 ```
 
-### Train the Model
+### 5. Train the Model
 
 ```bash
-python train.py
+python train.py --epochs 3 --batch 2
 ```
 
-Example:
+### 6. Run Prediction
+
+If you trained the model with this repository's default settings, the saved
+weights are expected at:
+
+```text
+results/trash_segmentation_yolov8n/weights/best.pt
+```
+
+Example prediction command:
 
 ```bash
-python train.py --epochs 10 --batch 4
+python predict.py --model results/trash_segmentation_yolov8n/weights/best.pt --source dataset/valid/images
 ```
 
-### Run Prediction
+If your environment saved weights under a different Ultralytics run directory,
+update the `--model` path accordingly.
+
+### 7. Optional Evaluation
+
+Because this dataset has no separate test split, evaluation can be run on the
+validation split:
 
 ```bash
-python predict.py
+python evaluate.py --model results/trash_segmentation_yolov8n/weights/best.pt --data dataset/data.yaml --split val
 ```
 
-Example:
+## What I Learned
 
-```bash
-python predict.py --source sample_images/test.jpg --conf 0.4
-```
+This project helped me understand that deep learning is not just about calling a
+model from a library.
 
-### Run Evaluation
+Some of the main lessons were:
 
-```bash
-python evaluate.py
-```
+- training is a loop of prediction, loss calculation, backpropagation, and weight updates
+- CNN-based models learn visual features such as edges, textures, shapes, and object boundaries
+- fine-tuning makes it possible to reuse pretrained knowledge for a new task
+- dataset format and label quality are as important as the model itself
+- segmentation is more detailed than detection because the model learns object shape
 
-## 13. Repository Structure
+## Main Challenge
+
+The hardest part for me was understanding how YOLO uses image-label pairs during
+training.
+
+I had to realize that the label files are not just extra files sitting beside
+the images. They are the **ground truth** that tells the model what the correct
+answer should be.
+
+For segmentation, this becomes even more interesting because the labels
+represent object masks or polygons. That means the model is learning object
+boundaries, not only rough object locations.
+
+Understanding how YOLO compares predictions with labels and then updates the
+weights was the most educational part of the project.
+
+## Limitations
+
+This is still a small and early experiment, so it has several limitations:
+
+- small dataset
+- only 3 epochs of training
+- no separate test split
+- CPU-only training
+- results are initial experimental results, not production-level performance
+
+## Future Improvements
+
+If I continue this project, the next steps would be:
+
+- train for more epochs
+- use a larger dataset
+- add a separate test split
+- try stronger YOLO models such as `YOLOv8s-seg` or `YOLOv8m-seg`
+- improve annotation quality
+- compare results across different model sizes
+
+## Repository Structure
 
 ```text
 .
@@ -238,21 +321,8 @@ python evaluate.py
     └── check_dataset.py
 ```
 
-## 14. Future Improvements
+## Notes
 
-Possible next steps for the project include:
-
-- collecting a larger and more diverse waste dataset
-- comparing `yolov8n-seg` with larger YOLO segmentation variants
-- improving annotation quality and class definitions
-- testing data augmentation strategies
-- analyzing failure cases in more detail
-- deploying the model in a small demo application
-
-## Notes on Repository Contents
-
-- The dataset is not included in this repository because datasets can be large.
-- Trained model weights are not included in this repository because weight files
-  can also be large.
-- The repository is intended to contain code, configuration templates, and
-  documentation for the academic project workflow.
+- The dataset is not included in the repository because datasets can be large.
+- Trained weights are not included in the repository because model files can also be large.
+- This project is a learning-focused fine-tuning experiment, not a production-ready system.
