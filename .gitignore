@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDEs
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# PyCharm project files
+*.iml
+out/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# YOLO / Ultralytics outputs
+runs/
+results/*
+!results/.gitkeep
+
+# Datasets
+dataset/
+datasets/
+data/
+
+# Model weights and exports
+*.pt
+*.pth
+*.onnx
+*.engine
+*.torchscript
+*.tflite
+*.mlmodel
+
+# Logs
+*.log
+

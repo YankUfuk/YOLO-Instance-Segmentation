@@ -1,0 +1,11 @@
+# Example YOLO segmentation dataset configuration.
+# Your real dataset/data.yaml should usually come from Roboflow export
+# or be prepared manually to match your local dataset folders.
+
+path: dataset
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names: ['trash']
